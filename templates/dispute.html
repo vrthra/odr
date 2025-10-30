@@ -110,19 +110,6 @@
         </div>
     </div>
 
-{% elif dispute.status == 'failed' %}
-    <div class="info-box danger">
-        <h2 style="margin: 0 0 15px 0;">❌ Impasse Reached</h2>
-        <p>The negotiation has failed. The bids did not overlap in the last round.</p>
-        {% if dispute.rounds %}
-            {% set last_round = dispute.rounds[-1] %}
-            <p style="margin-top: 15px;">
-                <strong>Last Round:</strong> Player 1 bid ${{ "%.2f"|format(last_round.b1) }}, 
-                Player 2 bid ${{ "%.2f"|format(last_round.b2) }}
-            </p>
-        {% endif %}
-    </div>
-
 {% else %}
     {# Active dispute #}
     
@@ -130,68 +117,68 @@
         {# Start new round #}
         <div class="info-box">
             <h3>Round {{ dispute.rounds|length + 1 }}</h3>
-            <p>Submit your bid for this round. Both players must submit before the proposal is calculated.</p>
+            <p>Submit your {{ 'offer' if is_player1 else 'demand' }} for this round. Both players must submit before the proposal is calculated.</p>
         </div>
         
-        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="bidForm">
+        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="offerForm">
             <div class="form-group">
-                <label for="bid">Your Bid:</label>
+                <label for="bid">{{ 'Your Offer' if is_player1 else 'Amount You Want' }}:</label>
                 <div class="range-container">
                     <input type="range" 
                            id="bidSlider" 
                            name="bid" 
-                           min="{{ dispute.s }}" 
-                           max="{{ dispute.c }}" 
+                           min="{{ slider_min }}" 
+                           max="{{ slider_max }}" 
                            step="0.01" 
-                           value="{{ (dispute.s + dispute.c) / 2 }}"
+                           value="{{ (slider_min + slider_max) / 2 }}"
                            oninput="updateBidValue(this.value)">
-                    <div class="value-display" id="bidValue">${{ "%.2f"|format((dispute.s + dispute.c) / 2) }}</div>
+                    <div class="value-display" id="bidValue">${{ "%.2f"|format((slider_min + slider_max) / 2) }}</div>
                     <div class="range-labels">
-                        <span>Min: ${{ "%.2f"|format(dispute.s) }}</span>
-                        <span>Max: ${{ "%.2f"|format(dispute.c) }}</span>
+                        <span>Min: ${{ "%.2f"|format(slider_min) }}</span>
+                        <span>Max: ${{ "%.2f"|format(slider_max) }}</span>
                     </div>
                 </div>
             </div>
-            <button type="submit">Submit Bid</button>
+            <button type="submit">Submit {{ 'Offer' if is_player1 else 'Demand' }}</button>
         </form>
         
     {% elif dispute.rounds[-1].status == 'bidding' %}
         {% if not user_has_bid %}
-            {# User needs to submit bid #}
+            {# User needs to submit offer #}
             <div class="info-box">
                 <h3>Round {{ dispute.rounds|length }}</h3>
-                <p>Submit your bid for this round. Both players must submit before the proposal is calculated.</p>
+                <p>Submit your {{ 'offer' if is_player1 else 'demand' }} for this round. Both players must submit before the proposal is calculated.</p>
             </div>
             
-            <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="bidForm">
+            <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="offerForm">
                 <div class="form-group">
-                    <label for="bid">Your Bid:</label>
+                    <label for="bid">{{ 'Your Offer' if is_player1 else 'Amount You Want' }}:</label>
                     <div class="range-container">
                         <input type="range" 
                                id="bidSlider" 
                                name="bid" 
-                               min="{{ dispute.s }}" 
-                               max="{{ dispute.c }}" 
+                               min="{{ slider_min }}" 
+                               max="{{ slider_max }}" 
                                step="0.01" 
-                               value="{{ (dispute.s + dispute.c) / 2 }}"
+                               value="{{ (slider_min + slider_max) / 2 }}"
                                oninput="updateBidValue(this.value)">
-                        <div class="value-display" id="bidValue">${{ "%.2f"|format((dispute.s + dispute.c) / 2) }}</div>
+                        <div class="value-display" id="bidValue">${{ "%.2f"|format((slider_min + slider_max) / 2) }}</div>
                         <div class="range-labels">
-                            <span>Min: ${{ "%.2f"|format(dispute.s) }}</span>
-                            <span>Max: ${{ "%.2f"|format(dispute.c) }}</span>
+                            <span>Min: ${{ "%.2f"|format(slider_min) }}</span>
+                            <span>Max: ${{ "%.2f"|format(slider_max) }}</span>
                         </div>
                     </div>
                 </div>
-                <button type="submit">Submit Bid</button>
+                <button type="submit">Submit {{ 'Offer' if is_player1 else 'Demand' }}</button>
             </form>
             
         {% else %}
-            {# User has bid, waiting for other player #}
+            {# User has submitted, waiting for other player #}
             <div class="waiting-box">
                 <h3>⏳ Waiting for Other Player</h3>
                 <div class="spinner"></div>
-                <p>You have submitted your bid. Waiting for the other player to submit theirs.</p>
-                <p style="margin-top: 15px;"><strong>Your bid:</strong> ${{ "%.2f"|format(dispute.rounds[-1].b1 if is_player1 else dispute.rounds[-1].b2) }}</p>
+                <p>You have submitted your {{ 'offer' if is_player1 else 'demand' }}. Waiting for the other player to submit theirs.</p>
+                <p style="margin-top: 15px;"><strong>Your {{ 'offer' if is_player1 else 'demand' }}:</strong> ${{ "%.2f"|format(dispute.rounds[-1].b1 if is_player1 else dispute.rounds[-1].b2) }}</p>
                 <button onclick="location.reload()" class="secondary" style="margin-top: 20px;">Refresh Page</button>
             </div>
         {% endif %}
@@ -203,7 +190,7 @@
             <h2>📋 Proposal for Round {{ dispute.rounds|length }}</h2>
             <p>The algorithm proposes settlement at:</p>
             <div class="proposal-amount">${{ "%.2f"|format(current_round.proposal) }}</div>
-            <p style="opacity: 0.9;">Based on bids: Player 1 (${{ "%.2f"|format(current_round.b1) }}), Player 2 (${{ "%.2f"|format(current_round.b2) }})</p>
+            <p style="opacity: 0.9;">Based on: {{ dispute.userA }} offers ${{ "%.2f"|format(current_round.b1) }}, {{ dispute.userB }} wants ${{ "%.2f"|format(current_round.b2) }}</p>
         </div>
         
         {% if not user_has_voted %}
@@ -235,6 +222,35 @@
             </div>
         {% endif %}
         
+    {% elif dispute.rounds[-1].status == 'impasse' %}
+        <div class="info-box warning">
+            <h3>Round {{ dispute.rounds|length }} Result: Impasse</h3>
+            <p>{{ dispute.userA }}'s offer (${{ "%.2f"|format(dispute.rounds[-1].b1) }}) was higher than {{ dispute.userB }}'s maximum (${{ "%.2f"|format(dispute.rounds[-1].b2) }}).</p>
+            <p style="margin-top: 10px;">Try adjusting your positions in the next round...</p>
+        </div>
+        
+        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="offerForm">
+            <div class="form-group">
+                <label for="bid">{{ 'Your Offer' if is_player1 else 'Amount You Want' }} for Round {{ dispute.rounds|length + 1 }}:</label>
+                <div class="range-container">
+                    <input type="range" 
+                           id="bidSlider" 
+                           name="bid" 
+                           min="{{ slider_min }}" 
+                           max="{{ slider_max }}" 
+                           step="0.01" 
+                           value="{{ (slider_min + slider_max) / 2 }}"
+                           oninput="updateBidValue(this.value)">
+                    <div class="value-display" id="bidValue">${{ "%.2f"|format((slider_min + slider_max) / 2) }}</div>
+                    <div class="range-labels">
+                        <span>Min: ${{ "%.2f"|format(slider_min) }}</span>
+                        <span>Max: ${{ "%.2f"|format(slider_max) }}</span>
+                    </div>
+                </div>
+            </div>
+            <button type="submit">Submit {{ 'Offer' if is_player1 else 'Demand' }}</button>
+        </form>
+        
     {% elif dispute.rounds[-1].status == 'rejected' %}
         <div class="info-box warning">
             <h3>Round {{ dispute.rounds|length }} Result: Proposal Rejected</h3>
@@ -242,26 +258,26 @@
             <p style="margin-top: 10px;">Starting a new round...</p>
         </div>
         
-        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="bidForm">
+        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="offerForm">
             <div class="form-group">
-                <label for="bid">Your Bid for Round {{ dispute.rounds|length + 1 }}:</label>
+                <label for="bid">{{ 'Your Offer' if is_player1 else 'Amount You Want' }} for Round {{ dispute.rounds|length + 1 }}:</label>
                 <div class="range-container">
                     <input type="range" 
                            id="bidSlider" 
                            name="bid" 
-                           min="{{ dispute.s }}" 
-                           max="{{ dispute.c }}" 
+                           min="{{ slider_min }}" 
+                           max="{{ slider_max }}" 
                            step="0.01" 
-                           value="{{ (dispute.s + dispute.c) / 2 }}"
+                           value="{{ (slider_min + slider_max) / 2 }}"
                            oninput="updateBidValue(this.value)">
-                    <div class="value-display" id="bidValue">${{ "%.2f"|format((dispute.s + dispute.c) / 2) }}</div>
+                    <div class="value-display" id="bidValue">${{ "%.2f"|format((slider_min + slider_max) / 2) }}</div>
                     <div class="range-labels">
-                        <span>Min: ${{ "%.2f"|format(dispute.s) }}</span>
-                        <span>Max: ${{ "%.2f"|format(dispute.c) }}</span>
+                        <span>Min: ${{ "%.2f"|format(slider_min) }}</span>
+                        <span>Max: ${{ "%.2f"|format(slider_max) }}</span>
                     </div>
                 </div>
             </div>
-            <button type="submit">Submit Bid</button>
+            <button type="submit">Submit {{ 'Offer' if is_player1 else 'Demand' }}</button>
         </form>
     {% endif %}
 {% endif %}
@@ -274,11 +290,11 @@
                 <h3>Round {{ round.round_number }}</h3>
                 <div class="round-detail">
                     <div class="detail-item">
-                        <div class="detail-label">Player 1 Bid</div>
+                        <div class="detail-label">{{ dispute.userA }} Offers</div>
                         <div class="detail-value">${{ "%.2f"|format(round.b1) if round.b1 is not none else "—" }}</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">Player 2 Bid</div>
+                        <div class="detail-label">{{ dispute.userB }} Wants</div>
                         <div class="detail-value">${{ "%.2f"|format(round.b2) if round.b2 is not none else "—" }}</div>
                     </div>
                     {% if round.proposal is not none %}
@@ -293,12 +309,15 @@
                                     ✓ Agreed
                                 {% elif round.result == 'rejected' %}
                                     ✗ Rejected
-                                {% elif round.result == 'impasse' %}
-                                    ⚠ Impasse
                                 {% else %}
                                     Voting...
                                 {% endif %}
                             </div>
+                        </div>
+                    {% elif round.result == 'impasse' %}
+                        <div class="detail-item" style="grid-column: 1 / -1;">
+                            <div class="detail-label">Result</div>
+                            <div class="detail-value">⚠ Impasse - No Overlap</div>
                         </div>
                     {% endif %}
                 </div>

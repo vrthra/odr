@@ -10,8 +10,8 @@
     <strong>How it works:</strong>
     <ul style="margin-left: 20px; margin-top: 10px;">
         <li>Two players negotiate over a payment amount</li>
-        <li>Each round, both submit bids simultaneously</li>
-        <li>If bids overlap (bid₁ ≤ bid₂), the algorithm proposes the midpoint</li>
+        <li>Each round, both submit offers/demands simultaneously</li>
+        <li>If offers overlap, the algorithm proposes the midpoint</li>
         <li>Both players vote on the proposal</li>
         <li>Agreement reached when both accept, or continue to next round</li>
     </ul>
@@ -29,49 +29,6 @@
         <input type="text" id="userB" name="userB" required placeholder="e.g., Bob">
     </div>
     
-    <h2>Initial Positions</h2>
-    <div class="form-group">
-        <label for="c">Player 1's Initial Claim ($c$):</label>
-        <input type="number" id="c" name="c" step="0.01" required placeholder="e.g., 1500">
-        <p class="help-text">The amount Player 1 is claiming</p>
-    </div>
-    
-    <div class="form-group">
-        <label for="s">Player 2's Initial Offer ($s$):</label>
-        <input type="number" id="s" name="s" step="0.01" required placeholder="e.g., 800">
-        <p class="help-text">The amount Player 2 is willing to offer (must be less than claim)</p>
-    </div>
-    
-    <h2>Private Values (Hidden from Other Player)</h2>
-    <div class="info-box warning">
-        <strong>Important:</strong> These values remain private to each player and are used to evaluate outcomes.
-    </div>
-    
-    <div class="form-group">
-        <label for="v1">Player 1's Minimum Acceptable ($v₁$):</label>
-        <input type="number" id="v1" name="v1" step="0.01" required placeholder="e.g., 1050">
-        <p class="help-text">The minimum amount Player 1 will accept (their BATNA)</p>
-    </div>
-    
-    <div class="form-group">
-        <label for="v2">Player 2's Maximum Offer ($v₂$):</label>
-        <input type="number" id="v2" name="v2" step="0.01" required placeholder="e.g., 1175">
-        <p class="help-text">The maximum amount Player 2 can offer (their BATNA)</p>
-    </div>
-    
     <button type="submit">Create Dispute</button>
 </form>
-
-<script>
-    // Validate that c > s
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const c = parseFloat(document.getElementById('c').value);
-        const s = parseFloat(document.getElementById('s').value);
-        
-        if (c <= s) {
-            e.preventDefault();
-            alert('Player 1\'s claim must be greater than Player 2\'s offer');
-        }
-    });
-</script>
 {% endblock %}
