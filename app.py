@@ -45,19 +45,16 @@ def create_dispute():
                          userA=userA, 
                          userB=userB)
 
-@app.route('/dispute/<int:dispute_id>/<username>/<token>')
-def dispute_view(dispute_id, username, token):
+@app.route('/dispute/<int:dispute_id>/<username>')
+def dispute_view(dispute_id, username):
     if dispute_id not in disputes:
         return "Dispute not found", 404
     
     dispute = disputes[dispute_id]
     
-    # Simple token validation - just check if username matches
+    # Simple validation - just check if username matches
     if username != dispute['userA'] and username != dispute['userB']:
         return "Invalid user", 403
-    
-    if token != username:
-        return "Invalid token", 403
     
     is_player1 = username == dispute['userA']
     
@@ -92,7 +89,6 @@ def dispute_view(dispute_id, username, token):
     return render_template('dispute.html',
                          dispute_id=dispute_id,
                          username=username,
-                         token=token,
                          dispute=dispute,
                          is_player1=is_player1,
                          private_value=private_value,
@@ -101,8 +97,8 @@ def dispute_view(dispute_id, username, token):
                          waiting_for_vote=waiting_for_vote,
                          user_has_voted=user_has_voted)
 
-@app.route('/dispute/<int:dispute_id>/<username>/<token>/bid', methods=['POST'])
-def submit_bid(dispute_id, username, token):
+@app.route('/dispute/<int:dispute_id>/<username>/bid', methods=['POST'])
+def submit_bid(dispute_id, username):
     if dispute_id not in disputes:
         return "Dispute not found", 404
     
@@ -111,11 +107,8 @@ def submit_bid(dispute_id, username, token):
     if username != dispute['userA'] and username != dispute['userB']:
         return "Invalid user", 403
     
-    if token != username:
-        return "Invalid token", 403
-    
     if dispute['status'] != 'active':
-        return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username, token=token))
+        return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username))
     
     is_player1 = username == dispute['userA']
     bid = float(request.form.get('bid'))
@@ -159,10 +152,10 @@ def submit_bid(dispute_id, username, token):
             current_round['result'] = 'impasse'
             dispute['status'] = 'failed'
     
-    return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username, token=token))
+    return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username))
 
-@app.route('/dispute/<int:dispute_id>/<username>/<token>/vote', methods=['POST'])
-def submit_vote(dispute_id, username, token):
+@app.route('/dispute/<int:dispute_id>/<username>/vote', methods=['POST'])
+def submit_vote(dispute_id, username):
     if dispute_id not in disputes:
         return "Dispute not found", 404
     
@@ -171,11 +164,8 @@ def submit_vote(dispute_id, username, token):
     if username != dispute['userA'] and username != dispute['userB']:
         return "Invalid user", 403
     
-    if token != username:
-        return "Invalid token", 403
-    
     if dispute['status'] != 'active':
-        return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username, token=token))
+        return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username))
     
     is_player1 = username == dispute['userA']
     vote = request.form.get('vote') == 'yes'
@@ -204,7 +194,7 @@ def submit_vote(dispute_id, username, token):
             current_round['result'] = 'rejected'
             # Continue to next round (stay active)
     
-    return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username, token=token))
+    return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)

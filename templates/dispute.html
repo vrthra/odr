@@ -133,7 +133,7 @@
             <p>Submit your bid for this round. Both players must submit before the proposal is calculated.</p>
         </div>
         
-        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/{{ token }}/bid" id="bidForm">
+        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="bidForm">
             <div class="form-group">
                 <label for="bid">Your Bid:</label>
                 <div class="range-container">
@@ -163,7 +163,7 @@
                 <p>Submit your bid for this round. Both players must submit before the proposal is calculated.</p>
             </div>
             
-            <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/{{ token }}/bid" id="bidForm">
+            <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="bidForm">
                 <div class="form-group">
                     <label for="bid">Your Bid:</label>
                     <div class="range-container">
@@ -216,7 +216,7 @@
                 {% endif %}
             </div>
             
-            <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/{{ token }}/vote">
+            <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/vote">
                 <p style="text-align: center; margin-bottom: 20px; font-weight: 600; font-size: 1.1em;">
                     Do you accept this proposal?
                 </p>
@@ -242,7 +242,7 @@
             <p style="margin-top: 10px;">Starting a new round...</p>
         </div>
         
-        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/{{ token }}/bid" id="bidForm">
+        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="bidForm">
             <div class="form-group">
                 <label for="bid">Your Bid for Round {{ dispute.rounds|length + 1 }}:</label>
                 <div class="range-container">

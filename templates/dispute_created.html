@@ -15,8 +15,8 @@
 <div class="form-group">
     <label>{{ userA }}'s URL (Player 1 - Claimant):</label>
     <div class="url-box">
-        <a href="/dispute/{{ dispute_id }}/{{ userA }}/{{ userA }}" target="_blank">
-            {{ request.url_root }}dispute/{{ dispute_id }}/{{ userA }}/{{ userA }}
+        <a href="/dispute/{{ dispute_id }}/{{ userA }}" target="_blank">
+            {{ request.url_root }}dispute/{{ dispute_id }}/{{ userA }}
         </a>
     </div>
 </div>
@@ -24,8 +24,8 @@
 <div class="form-group">
     <label>{{ userB }}'s URL (Player 2 - Respondent):</label>
     <div class="url-box">
-        <a href="/dispute/{{ dispute_id }}/{{ userB }}/{{ userB }}" target="_blank">
-            {{ request.url_root }}dispute/{{ dispute_id }}/{{ userB }}/{{ userB }}
+        <a href="/dispute/{{ dispute_id }}/{{ userB }}" target="_blank">
+            {{ request.url_root }}dispute/{{ dispute_id }}/{{ userB }}
         </a>
     </div>
 </div>
@@ -41,10 +41,10 @@
 </div>
 
 <div class="button-group">
-    <a href="/dispute/{{ dispute_id }}/{{ userA }}/{{ userA }}" style="text-decoration: none;">
+    <a href="/dispute/{{ dispute_id }}/{{ userA }}" style="text-decoration: none;">
         <button>Open {{ userA }}'s View</button>
     </a>
-    <a href="/dispute/{{ dispute_id }}/{{ userB }}/{{ userB }}" style="text-decoration: none;">
+    <a href="/dispute/{{ dispute_id }}/{{ userB }}" style="text-decoration: none;">
         <button class="secondary">Open {{ userB }}'s View</button>
     </a>
 </div>
