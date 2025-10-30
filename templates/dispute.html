@@ -109,12 +109,12 @@
         {# Start new round #}
         <div class="info-box">
             <h3>Round {{ dispute.rounds|length + 1 }}</h3>
-            <p>Submit your {{ 'offer' if is_player1 else 'demand' }} for this round. Both players must submit before the proposal is calculated.</p>
+            <p>Submit your {{ 'demand' if is_player1 else 'offer' }} for this round. Both players must submit before the proposal is calculated.</p>
         </div>
         
         <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="offerForm">
             <div class="form-group">
-                <label for="bid">{{ 'Your Offer' if is_player1 else 'Amount You Want' }}:</label>
+                <label for="bid">{{ 'Your Demand' if is_player1 else 'Your Offer' }}:</label>
                 <div class="range-container">
                     <input type="range" 
                            id="bidSlider" 
@@ -131,7 +131,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit">Submit {{ 'Offer' if is_player1 else 'Demand' }}</button>
+            <button type="submit">Submit {{ 'Demand' if is_player1 else 'Offer' }}</button>
         </form>
         
     {% elif dispute.rounds[-1].status == 'bidding' %}
@@ -139,12 +139,12 @@
             {# User needs to submit offer #}
             <div class="info-box">
                 <h3>Round {{ dispute.rounds|length }}</h3>
-                <p>Submit your {{ 'offer' if is_player1 else 'demand' }} for this round. Both players must submit before the proposal is calculated.</p>
+                <p>Submit your {{ 'demand' if is_player1 else 'offer' }} for this round. Both players must submit before the proposal is calculated.</p>
             </div>
             
             <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="offerForm">
                 <div class="form-group">
-                    <label for="bid">{{ 'Your Offer' if is_player1 else 'Amount You Want' }}:</label>
+                    <label for="bid">{{ 'Your Demand' if is_player1 else 'Your Offer' }}:</label>
                     <div class="range-container">
                         <input type="range" 
                                id="bidSlider" 
@@ -161,7 +161,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit">Submit {{ 'Offer' if is_player1 else 'Demand' }}</button>
+                <button type="submit">Submit {{ 'Demand' if is_player1 else 'Offer' }}</button>
             </form>
             
         {% else %}
@@ -169,8 +169,8 @@
             <div class="waiting-box">
                 <h3>⏳ Waiting for Other Player</h3>
                 <div class="spinner"></div>
-                <p>You have submitted your {{ 'offer' if is_player1 else 'demand' }}. Waiting for the other player to submit theirs.</p>
-                <p style="margin-top: 15px;"><strong>Your {{ 'offer' if is_player1 else 'demand' }}:</strong> ${{ "%.2f"|format(dispute.rounds[-1].b1 if is_player1 else dispute.rounds[-1].b2) }}</p>
+                <p>You have submitted your {{ 'demand' if is_player1 else 'offer' }}. Waiting for the other player to submit theirs.</p>
+                <p style="margin-top: 15px;"><strong>Your {{ 'demand' if is_player1 else 'offer' }}:</strong> ${{ "%.2f"|format(dispute.rounds[-1].b1 if is_player1 else dispute.rounds[-1].b2) }}</p>
                 <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Page will refresh automatically...</p>
             </div>
             <script>
@@ -226,7 +226,7 @@
         
         <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="offerForm">
             <div class="form-group">
-                <label for="bid">{{ 'Your Offer' if is_player1 else 'Amount You Want' }} for Round {{ dispute.rounds|length + 1 }}:</label>
+                <label for="bid">{{ 'Your Demand' if is_player1 else 'Your Offer' }} for Round {{ dispute.rounds|length + 1 }}:</label>
                 <div class="range-container">
                     <input type="range" 
                            id="bidSlider" 
@@ -243,7 +243,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit">Submit {{ 'Offer' if is_player1 else 'Demand' }}</button>
+            <button type="submit">Submit {{ 'Demand' if is_player1 else 'Offer' }}</button>
         </form>
         
     {% elif dispute.rounds[-1].status == 'rejected' %}
@@ -255,7 +255,7 @@
         
         <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/bid" id="offerForm">
             <div class="form-group">
-                <label for="bid">{{ 'Your Offer' if is_player1 else 'Amount You Want' }} for Round {{ dispute.rounds|length + 1 }}:</label>
+                <label for="bid">{{ 'Your Demand' if is_player1 else 'Your Offer' }} for Round {{ dispute.rounds|length + 1 }}:</label>
                 <div class="range-container">
                     <input type="range" 
                            id="bidSlider" 
@@ -272,7 +272,7 @@
                     </div>
                 </div>
             </div>
-            <button type="submit">Submit {{ 'Offer' if is_player1 else 'Demand' }}</button>
+            <button type="submit">Submit {{ 'Demand' if is_player1 else 'Offer' }}</button>
         </form>
     {% endif %}
 {% endif %}

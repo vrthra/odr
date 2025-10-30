@@ -13,11 +13,11 @@
 <h2>Initial Public Positions</h2>
 <div class="round-detail" style="margin-bottom: 30px;">
     <div class="detail-item">
-        <div class="detail-label">{{ userA }}'s First Offer</div>
+        <div class="detail-label">{{ userA }}'s First Demand</div>
         <div class="detail-value">${{ "%.2f"|format(c) }}</div>
     </div>
     <div class="detail-item">
-        <div class="detail-label">{{ userB }}'s First Counteroffer</div>
+        <div class="detail-label">{{ userB }}'s First Offer</div>
         <div class="detail-value">${{ "%.2f"|format(s) }}</div>
     </div>
 </div>
@@ -53,10 +53,10 @@
 </div>
 
 <div class="button-group">
-    <a href="/dispute/{{ dispute_id }}/{{ userA }}" style="text-decoration: none;">
+    <a href="/dispute/{{ dispute_id }}/{{ userA }}" style="text-decoration: none;" target='_blank'>
         <button>Open {{ userA }}'s View</button>
     </a>
-    <a href="/dispute/{{ dispute_id }}/{{ userB }}" style="text-decoration: none;">
+    <a href="/dispute/{{ dispute_id }}/{{ userB }}" style="text-decoration: none;" target='_blank'>
         <button class="secondary">Open {{ userB }}'s View</button>
     </a>
 </div>
