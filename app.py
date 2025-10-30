@@ -27,16 +27,12 @@ def create_dispute():
     disputes[dispute_id] = {
         'userA': userA,
         'userB': userB,
-        'v1': None,  # Player 1's minimum acceptable - to be set
-        'v2': None,  # Player 2's maximum offer - to be set
         'c': c,      # Initial claim by Player 1 (public)
         's': s,      # Initial offer by Player 2 (public)
-        'player1_setup': False,
-        'player2_setup': False,
         'min_value': s,
         'max_value': c,
         'rounds': [],
-        'status': 'setup',
+        'status': 'active',
         'created_at': datetime.now().isoformat()
     }
     
@@ -46,31 +42,6 @@ def create_dispute():
                          userB=userB,
                          c=c,
                          s=s)
-
-@app.route('/dispute/<int:dispute_id>/<username>/setup', methods=['POST'])
-def submit_setup(dispute_id, username):
-    if dispute_id not in disputes:
-        return "Dispute not found", 404
-    
-    dispute = disputes[dispute_id]
-    
-    if username != dispute['userA'] and username != dispute['userB']:
-        return "Invalid user", 403
-    
-    is_player1 = username == dispute['userA']
-    
-    if is_player1:
-        dispute['v1'] = float(request.form.get('private_value'))
-        dispute['player1_setup'] = True
-    else:
-        dispute['v2'] = float(request.form.get('private_value'))
-        dispute['player2_setup'] = True
-    
-    # Check if both players have completed setup
-    if dispute['player1_setup'] and dispute['player2_setup']:
-        dispute['status'] = 'active'
-    
-    return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username))
 
 @app.route('/dispute/<int:dispute_id>/<username>')
 def dispute_view(dispute_id, username):
@@ -85,26 +56,9 @@ def dispute_view(dispute_id, username):
     
     is_player1 = username == dispute['userA']
     
-    # Handle setup phase
-    if dispute['status'] == 'setup':
-        player_setup_complete = dispute['player1_setup'] if is_player1 else dispute['player2_setup']
-        other_setup_complete = dispute['player2_setup'] if is_player1 else dispute['player1_setup']
-        
-        return render_template('setup.html',
-                             dispute_id=dispute_id,
-                             username=username,
-                             dispute=dispute,
-                             is_player1=is_player1,
-                             player_setup_complete=player_setup_complete,
-                             other_setup_complete=other_setup_complete)
-    
-    # Calculate slider bounds based on private values
-    if is_player1:
-        slider_min = max(dispute['s'], dispute['v1'])
-        slider_max = dispute['c']
-    else:
-        slider_min = dispute['s']
-        slider_max = min(dispute['c'], dispute['v2'])
+    # Slider bounds are simply the dispute range
+    slider_min = dispute['s']
+    slider_max = dispute['c']
     
     # Check if user has already bid in current round
     current_round = len(dispute['rounds'])
@@ -132,14 +86,11 @@ def dispute_view(dispute_id, username):
             user_has_voted = last_round['vote2'] is not None
             waiting_for_vote = not user_has_voted
     
-    private_value = dispute['v1'] if is_player1 else dispute['v2']
-    
     return render_template('dispute.html',
                          dispute_id=dispute_id,
                          username=username,
                          dispute=dispute,
                          is_player1=is_player1,
-                         private_value=private_value,
                          slider_min=slider_min,
                          slider_max=slider_max,
                          user_has_bid=user_has_bid,
@@ -163,15 +114,8 @@ def submit_bid(dispute_id, username):
     is_player1 = username == dispute['userA']
     bid = float(request.form.get('bid'))
     
-    # Validate bid is in range based on player's private value
-    if is_player1:
-        min_bid = dispute['v1']
-        max_bid = dispute['c']
-    else:
-        min_bid = dispute['s']
-        max_bid = dispute['v2']
-    
-    if bid < min_bid or bid > max_bid:
+    # Validate bid is in range
+    if bid < dispute['s'] or bid > dispute['c']:
         return "Bid out of range", 400
     
     # Get or create current round

@@ -90,7 +90,6 @@
     <h2>Welcome, {{ username }}!</h2>
     <p><strong>Role:</strong> Player {{ '1 (Claimant)' if is_player1 else '2 (Respondent)' }}</p>
     <p><strong>Dispute ID:</strong> {{ dispute_id }}</p>
-    <p><strong>Your Private Value:</strong> ${{ "%.2f"|format(private_value) }}</p>
     <p><strong>Status:</strong> <span class="status-badge status-{{ dispute.status }}">{{ dispute.status.upper() }}</span></p>
 </div>
 
@@ -100,13 +99,6 @@
         <div style="text-align: center;">
             <div class="value-display">${{ "%.2f"|format(dispute.settlement) }}</div>
             <p style="margin-top: 15px;">Both parties have agreed to settle at this amount.</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">
-                {% if is_player1 %}
-                    This is {{ "above" if dispute.settlement >= private_value else "below" }} your minimum acceptable value of ${{ "%.2f"|format(private_value) }}.
-                {% else %}
-                    This is {{ "below" if dispute.settlement <= private_value else "above" }} your maximum offer of ${{ "%.2f"|format(private_value) }}.
-                {% endif %}
-            </p>
         </div>
     </div>
 
@@ -200,15 +192,6 @@
         </div>
         
         {% if not user_has_voted %}
-            <div class="info-box">
-                <p><strong>Your private value:</strong> ${{ "%.2f"|format(private_value) }}</p>
-                {% if is_player1 %}
-                    <p>This proposal is {{ "above" if current_round.proposal >= private_value else "below" }} your minimum acceptable value.</p>
-                {% else %}
-                    <p>This proposal is {{ "below" if current_round.proposal <= private_value else "above" }} your maximum offer.</p>
-                {% endif %}
-            </div>
-            
             <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/vote">
                 <p style="text-align: center; margin-bottom: 20px; font-weight: 600; font-size: 1.1em;">
                     Do you accept this proposal?
@@ -302,11 +285,11 @@
                 <h3>Round {{ round.round_number }}</h3>
                 <div class="round-detail">
                     <div class="detail-item">
-                        <div class="detail-label">{{ dispute.userA }} Offers</div>
+                        <div class="detail-label">{{ dispute.userA }} Demands</div>
                         <div class="detail-value">${{ "%.2f"|format(round.b1) if round.b1 is not none else "—" }}</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">{{ dispute.userB }} Wants</div>
+                        <div class="detail-label">{{ dispute.userB }} Offers</div>
                         <div class="detail-value">${{ "%.2f"|format(round.b2) if round.b2 is not none else "—" }}</div>
                     </div>
                     {% if round.proposal is not none %}

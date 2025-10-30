@@ -7,47 +7,57 @@
 <p class="subtitle">Dispute ID: {{ dispute_id }}</p>
 
 <div class="info-box success">
-    <strong>Success!</strong> The dispute has been created. Each player should use their unique URL below to set up their private values and initial positions.
+    <strong>Success!</strong> The dispute has been created. Each player can now access their negotiation page.
 </div>
 
-<h2>Player Setup URLs</h2>
+<h2>Initial Public Positions</h2>
+<div class="round-detail" style="margin-bottom: 30px;">
+    <div class="detail-item">
+        <div class="detail-label">{{ userA }}'s First Offer</div>
+        <div class="detail-value">${{ "%.2f"|format(c) }}</div>
+    </div>
+    <div class="detail-item">
+        <div class="detail-label">{{ userB }}'s First Counteroffer</div>
+        <div class="detail-value">${{ "%.2f"|format(s) }}</div>
+    </div>
+</div>
+
+<h2>Player Access URLs</h2>
 
 <div class="form-group">
-    <label>{{ userA }}'s Setup URL (Player 1 - Claimant):</label>
+    <label>{{ userA }}'s Negotiation URL (Player 1 - Claimant):</label>
     <div class="url-box">
         <a href="/dispute/{{ dispute_id }}/{{ userA }}" target="_blank">
             {{ request.url_root }}dispute/{{ dispute_id }}/{{ userA }}
         </a>
     </div>
-    <p class="help-text">{{ userA }} will enter their minimum acceptable amount and initial claim</p>
 </div>
 
 <div class="form-group">
-    <label>{{ userB }}'s Setup URL (Player 2 - Respondent):</label>
+    <label>{{ userB }}'s Negotiation URL (Player 2 - Respondent):</label>
     <div class="url-box">
         <a href="/dispute/{{ dispute_id }}/{{ userB }}" target="_blank">
             {{ request.url_root }}dispute/{{ dispute_id }}/{{ userB }}
         </a>
     </div>
-    <p class="help-text">{{ userB }} will enter their maximum offer and initial counteroffer</p>
 </div>
 
 <div class="info-box">
     <strong>Next Steps:</strong>
     <ul style="margin-left: 20px; margin-top: 10px;">
         <li>Share each URL with the respective player</li>
-        <li>Each player enters their private values and initial position</li>
-        <li>Once both players complete setup, the negotiation begins</li>
         <li>Both players submit offers simultaneously each round</li>
+        <li>The system calculates proposals based on offer overlaps</li>
+        <li>Players vote to accept or reject proposals</li>
     </ul>
 </div>
 
 <div class="button-group">
     <a href="/dispute/{{ dispute_id }}/{{ userA }}" style="text-decoration: none;">
-        <button>Open {{ userA }}'s Setup</button>
+        <button>Open {{ userA }}'s View</button>
     </a>
     <a href="/dispute/{{ dispute_id }}/{{ userB }}" style="text-decoration: none;">
-        <button class="secondary">Open {{ userB }}'s Setup</button>
+        <button class="secondary">Open {{ userB }}'s View</button>
     </a>
 </div>
 
