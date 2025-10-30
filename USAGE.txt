@@ -1,0 +1,32 @@
+ONLINE DISPUTE RESOLUTION APP
+=============================
+
+QUICK START:
+1. Install dependencies: pip install -r requirements.txt
+2. Run the app: python app.py
+3. Open browser to: http://localhost:5000
+
+STRUCTURE:
+- app.py                    # Main Flask application
+- requirements.txt          # Python dependencies
+- templates/
+  ├── base.html            # Base template with styling
+  ├── index.html           # Create dispute page
+  ├── dispute_created.html # Shows player URLs
+  └── dispute.html         # Main dispute interface
+
+FEATURES:
+✓ No database - all in-memory
+✓ No cookies - state in URLs
+✓ Simple token system (username = token)
+✓ Polished UI with gradient design
+✓ Slider-based bidding interface
+✓ Real-time proposal calculation
+✓ Round history tracking
+✓ Private value display
+
+URL STRUCTURE:
+- Create dispute: /
+- Player access: /dispute/<id>/<username>/<token>
+- Submit bid: POST /dispute/<id>/<username>/<token>/bid
+- Submit vote: POST /dispute/<id>/<username>/<token>/vote

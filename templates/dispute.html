@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Dispute #{{ dispute_id }} - {{ username }} - ODR{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .player-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+    }
+    
+    .player-info h2 {
+        color: white;
+        margin: 0 0 10px 0;
+    }
+    
+    .player-info p {
+        margin: 5px 0;
+        opacity: 0.95;
+    }
+    
+    .range-container {
+        margin: 20px 0;
+    }
+    
+    .range-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 0.9em;
+        color: #666;
+    }
+    
+    .proposal-box {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        margin: 30px 0;
+    }
+    
+    .proposal-box h2 {
+        color: white;
+        margin: 0 0 15px 0;
+    }
+    
+    .proposal-amount {
+        font-size: 3em;
+        font-weight: bold;
+        margin: 20px 0;
+    }
+    
+    .waiting-box {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        margin: 30px 0;
+    }
+    
+    .waiting-box h3 {
+        color: #856404;
+        margin-bottom: 10px;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="player-info">
+    <h2>Welcome, {{ username }}!</h2>
+    <p><strong>Role:</strong> Player {{ '1 (Claimant)' if is_player1 else '2 (Respondent)' }}</p>
+    <p><strong>Dispute ID:</strong> {{ dispute_id }}</p>
+    <p><strong>Your Private Value:</strong> ${{ "%.2f"|format(private_value) }}</p>
+    <p><strong>Status:</strong> <span class="status-badge status-{{ dispute.status }}">{{ dispute.status.upper() }}</span></p>
+</div>
+
+{% if dispute.status == 'settled' %}
+    <div class="info-box success">
+        <h2 style="margin: 0 0 15px 0;">🎉 Agreement Reached!</h2>
+        <div style="text-align: center;">
+            <div class="value-display">${{ "%.2f"|format(dispute.settlement) }}</div>
+            <p style="margin-top: 15px;">Both parties have agreed to settle at this amount.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                {% if is_player1 %}
+                    This is {{ "above" if dispute.settlement >= private_value else "below" }} your minimum acceptable value of ${{ "%.2f"|format(private_value) }}.
+                {% else %}
+                    This is {{ "below" if dispute.settlement <= private_value else "above" }} your maximum offer of ${{ "%.2f"|format(private_value) }}.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+{% elif dispute.status == 'failed' %}
+    <div class="info-box danger">
+        <h2 style="margin: 0 0 15px 0;">❌ Impasse Reached</h2>
+        <p>The negotiation has failed. The bids did not overlap in the last round.</p>
+        {% if dispute.rounds %}
+            {% set last_round = dispute.rounds[-1] %}
+            <p style="margin-top: 15px;">
+                <strong>Last Round:</strong> Player 1 bid ${{ "%.2f"|format(last_round.b1) }}, 
+                Player 2 bid ${{ "%.2f"|format(last_round.b2) }}
+            </p>
+        {% endif %}
+    </div>
+
+{% else %}
+    {# Active dispute #}
+    
+    {% if not dispute.rounds or (dispute.rounds and dispute.rounds[-1].status not in ['bidding', 'voting']) %}
+        {# Start new round #}
+        <div class="info-box">
+            <h3>Round {{ dispute.rounds|length + 1 }}</h3>
+            <p>Submit your bid for this round. Both players must submit before the proposal is calculated.</p>
+        </div>
+        
+        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/{{ token }}/bid" id="bidForm">
+            <div class="form-group">
+                <label for="bid">Your Bid:</label>
+                <div class="range-container">
+                    <input type="range" 
+                           id="bidSlider" 
+                           name="bid" 
+                           min="{{ dispute.s }}" 
+                           max="{{ dispute.c }}" 
+                           step="0.01" 
+                           value="{{ (dispute.s + dispute.c) / 2 }}"
+                           oninput="updateBidValue(this.value)">
+                    <div class="value-display" id="bidValue">${{ "%.2f"|format((dispute.s + dispute.c) / 2) }}</div>
+                    <div class="range-labels">
+                        <span>Min: ${{ "%.2f"|format(dispute.s) }}</span>
+                        <span>Max: ${{ "%.2f"|format(dispute.c) }}</span>
+                    </div>
+                </div>
+            </div>
+            <button type="submit">Submit Bid</button>
+        </form>
+        
+    {% elif dispute.rounds[-1].status == 'bidding' %}
+        {% if not user_has_bid %}
+            {# User needs to submit bid #}
+            <div class="info-box">
+                <h3>Round {{ dispute.rounds|length }}</h3>
+                <p>Submit your bid for this round. Both players must submit before the proposal is calculated.</p>
+            </div>
+            
+            <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/{{ token }}/bid" id="bidForm">
+                <div class="form-group">
+                    <label for="bid">Your Bid:</label>
+                    <div class="range-container">
+                        <input type="range" 
+                               id="bidSlider" 
+                               name="bid" 
+                               min="{{ dispute.s }}" 
+                               max="{{ dispute.c }}" 
+                               step="0.01" 
+                               value="{{ (dispute.s + dispute.c) / 2 }}"
+                               oninput="updateBidValue(this.value)">
+                        <div class="value-display" id="bidValue">${{ "%.2f"|format((dispute.s + dispute.c) / 2) }}</div>
+                        <div class="range-labels">
+                            <span>Min: ${{ "%.2f"|format(dispute.s) }}</span>
+                            <span>Max: ${{ "%.2f"|format(dispute.c) }}</span>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit">Submit Bid</button>
+            </form>
+            
+        {% else %}
+            {# User has bid, waiting for other player #}
+            <div class="waiting-box">
+                <h3>⏳ Waiting for Other Player</h3>
+                <div class="spinner"></div>
+                <p>You have submitted your bid. Waiting for the other player to submit theirs.</p>
+                <p style="margin-top: 15px;"><strong>Your bid:</strong> ${{ "%.2f"|format(dispute.rounds[-1].b1 if is_player1 else dispute.rounds[-1].b2) }}</p>
+                <button onclick="location.reload()" class="secondary" style="margin-top: 20px;">Refresh Page</button>
+            </div>
+        {% endif %}
+        
+    {% elif dispute.rounds[-1].status == 'voting' %}
+        {% set current_round = dispute.rounds[-1] %}
+        
+        <div class="proposal-box">
+            <h2>📋 Proposal for Round {{ dispute.rounds|length }}</h2>
+            <p>The algorithm proposes settlement at:</p>
+            <div class="proposal-amount">${{ "%.2f"|format(current_round.proposal) }}</div>
+            <p style="opacity: 0.9;">Based on bids: Player 1 (${{ "%.2f"|format(current_round.b1) }}), Player 2 (${{ "%.2f"|format(current_round.b2) }})</p>
+        </div>
+        
+        {% if not user_has_voted %}
+            <div class="info-box">
+                <p><strong>Your private value:</strong> ${{ "%.2f"|format(private_value) }}</p>
+                {% if is_player1 %}
+                    <p>This proposal is {{ "above" if current_round.proposal >= private_value else "below" }} your minimum acceptable value.</p>
+                {% else %}
+                    <p>This proposal is {{ "below" if current_round.proposal <= private_value else "above" }} your maximum offer.</p>
+                {% endif %}
+            </div>
+            
+            <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/{{ token }}/vote">
+                <p style="text-align: center; margin-bottom: 20px; font-weight: 600; font-size: 1.1em;">
+                    Do you accept this proposal?
+                </p>
+                <div class="button-group">
+                    <button type="submit" name="vote" value="yes" class="success">✓ Accept</button>
+                    <button type="submit" name="vote" value="no" class="danger">✗ Reject</button>
+                </div>
+            </form>
+        {% else %}
+            <div class="waiting-box">
+                <h3>⏳ Waiting for Other Player's Vote</h3>
+                <div class="spinner"></div>
+                <p>You have voted. Waiting for the other player to vote.</p>
+                <p style="margin-top: 15px;"><strong>Your vote:</strong> {{ "ACCEPT ✓" if (current_round.vote1 if is_player1 else current_round.vote2) else "REJECT ✗" }}</p>
+                <button onclick="location.reload()" class="secondary" style="margin-top: 20px;">Refresh Page</button>
+            </div>
+        {% endif %}
+        
+    {% elif dispute.rounds[-1].status == 'rejected' %}
+        <div class="info-box warning">
+            <h3>Round {{ dispute.rounds|length }} Result: Proposal Rejected</h3>
+            <p>At least one player rejected the proposal of ${{ "%.2f"|format(dispute.rounds[-1].proposal) }}.</p>
+            <p style="margin-top: 10px;">Starting a new round...</p>
+        </div>
+        
+        <form method="POST" action="/dispute/{{ dispute_id }}/{{ username }}/{{ token }}/bid" id="bidForm">
+            <div class="form-group">
+                <label for="bid">Your Bid for Round {{ dispute.rounds|length + 1 }}:</label>
+                <div class="range-container">
+                    <input type="range" 
+                           id="bidSlider" 
+                           name="bid" 
+                           min="{{ dispute.s }}" 
+                           max="{{ dispute.c }}" 
+                           step="0.01" 
+                           value="{{ (dispute.s + dispute.c) / 2 }}"
+                           oninput="updateBidValue(this.value)">
+                    <div class="value-display" id="bidValue">${{ "%.2f"|format((dispute.s + dispute.c) / 2) }}</div>
+                    <div class="range-labels">
+                        <span>Min: ${{ "%.2f"|format(dispute.s) }}</span>
+                        <span>Max: ${{ "%.2f"|format(dispute.c) }}</span>
+                    </div>
+                </div>
+            </div>
+            <button type="submit">Submit Bid</button>
+        </form>
+    {% endif %}
+{% endif %}
+
+{% if dispute.rounds %}
+    <div class="round-history">
+        <h2>Round History</h2>
+        {% for round in dispute.rounds %}
+            <div class="round">
+                <h3>Round {{ round.round_number }}</h3>
+                <div class="round-detail">
+                    <div class="detail-item">
+                        <div class="detail-label">Player 1 Bid</div>
+                        <div class="detail-value">${{ "%.2f"|format(round.b1) if round.b1 is not none else "—" }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Player 2 Bid</div>
+                        <div class="detail-value">${{ "%.2f"|format(round.b2) if round.b2 is not none else "—" }}</div>
+                    </div>
+                    {% if round.proposal is not none %}
+                        <div class="detail-item">
+                            <div class="detail-label">Proposal</div>
+                            <div class="detail-value">${{ "%.2f"|format(round.proposal) }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Result</div>
+                            <div class="detail-value">
+                                {% if round.result == 'agreement' %}
+                                    ✓ Agreed
+                                {% elif round.result == 'rejected' %}
+                                    ✗ Rejected
+                                {% elif round.result == 'impasse' %}
+                                    ⚠ Impasse
+                                {% else %}
+                                    Voting...
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<script>
+function updateBidValue(value) {
+    document.getElementById('bidValue').textContent = '$' + parseFloat(value).toFixed(2);
+}
+</script>
+{% endblock %}

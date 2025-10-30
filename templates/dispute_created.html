@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Dispute Created - ODR{% endblock %}
+
+{% block content %}
+<h1>Dispute Created Successfully! 🎉</h1>
+<p class="subtitle">Dispute ID: {{ dispute_id }}</p>
+
+<div class="info-box success">
+    <strong>Success!</strong> The dispute has been created. Each player should use their unique URL below to participate.
+</div>
+
+<h2>Player Access URLs</h2>
+
+<div class="form-group">
+    <label>{{ userA }}'s URL (Player 1 - Claimant):</label>
+    <div class="url-box">
+        <a href="/dispute/{{ dispute_id }}/{{ userA }}/{{ userA }}" target="_blank">
+            {{ request.url_root }}dispute/{{ dispute_id }}/{{ userA }}/{{ userA }}
+        </a>
+    </div>
+</div>
+
+<div class="form-group">
+    <label>{{ userB }}'s URL (Player 2 - Respondent):</label>
+    <div class="url-box">
+        <a href="/dispute/{{ dispute_id }}/{{ userB }}/{{ userB }}" target="_blank">
+            {{ request.url_root }}dispute/{{ dispute_id }}/{{ userB }}/{{ userB }}
+        </a>
+    </div>
+</div>
+
+<div class="info-box">
+    <strong>Next Steps:</strong>
+    <ul style="margin-left: 20px; margin-top: 10px;">
+        <li>Share each URL with the respective player</li>
+        <li>Each player can only access their own page</li>
+        <li>Both players submit bids simultaneously each round</li>
+        <li>The system will guide you through the negotiation process</li>
+    </ul>
+</div>
+
+<div class="button-group">
+    <a href="/dispute/{{ dispute_id }}/{{ userA }}/{{ userA }}" style="text-decoration: none;">
+        <button>Open {{ userA }}'s View</button>
+    </a>
+    <a href="/dispute/{{ dispute_id }}/{{ userB }}/{{ userB }}" style="text-decoration: none;">
+        <button class="secondary">Open {{ userB }}'s View</button>
+    </a>
+</div>
+
+<div style="margin-top: 30px; text-align: center;">
+    <a href="/" style="color: #667eea; text-decoration: none; font-weight: 600;">← Create Another Dispute</a>
+</div>
+{% endblock %}
