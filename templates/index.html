@@ -29,6 +29,36 @@
         <input type="text" id="userB" name="userB" required placeholder="e.g., Bob">
     </div>
     
+    <h2>Initial Public Positions</h2>
+    <div class="info-box">
+        <strong>Note:</strong> These opening positions are public to both players. Each player will then privately set their walk-away values.
+    </div>
+    
+    <div class="form-group">
+        <label for="c">Player 1's First Offer (Opening Claim):</label>
+        <input type="number" id="c" name="c" step="0.01" required placeholder="e.g., 1500">
+        <p class="help-text">The amount Player 1 is initially claiming</p>
+    </div>
+    
+    <div class="form-group">
+        <label for="s">Player 2's First Counteroffer (Opening Demand):</label>
+        <input type="number" id="s" name="s" step="0.01" required placeholder="e.g., 800">
+        <p class="help-text">The amount Player 2 is initially offering (must be less than Player 1's offer)</p>
+    </div>
+    
     <button type="submit">Create Dispute</button>
 </form>
+
+<script>
+    // Validate that c > s
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const c = parseFloat(document.getElementById('c').value);
+        const s = parseFloat(document.getElementById('s').value);
+        
+        if (c <= s) {
+            e.preventDefault();
+            alert('Player 1\'s offer must be greater than Player 2\'s counteroffer');
+        }
+    });
+</script>
 {% endblock %}

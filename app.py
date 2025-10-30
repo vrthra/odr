@@ -18,6 +18,8 @@ def create_dispute():
     
     userA = request.form.get('userA')
     userB = request.form.get('userB')
+    c = float(request.form.get('c'))
+    s = float(request.form.get('s'))
     
     dispute_id = dispute_counter
     dispute_counter += 1
@@ -27,12 +29,12 @@ def create_dispute():
         'userB': userB,
         'v1': None,  # Player 1's minimum acceptable - to be set
         'v2': None,  # Player 2's maximum offer - to be set
-        'c': None,   # Initial claim by Player 1 - to be set
-        's': None,   # Initial offer by Player 2 - to be set
+        'c': c,      # Initial claim by Player 1 (public)
+        's': s,      # Initial offer by Player 2 (public)
         'player1_setup': False,
         'player2_setup': False,
-        'min_value': None,
-        'max_value': None,
+        'min_value': s,
+        'max_value': c,
         'rounds': [],
         'status': 'setup',
         'created_at': datetime.now().isoformat()
@@ -41,7 +43,9 @@ def create_dispute():
     return render_template('dispute_created.html', 
                          dispute_id=dispute_id, 
                          userA=userA, 
-                         userB=userB)
+                         userB=userB,
+                         c=c,
+                         s=s)
 
 @app.route('/dispute/<int:dispute_id>/<username>/setup', methods=['POST'])
 def submit_setup(dispute_id, username):
@@ -57,17 +61,13 @@ def submit_setup(dispute_id, username):
     
     if is_player1:
         dispute['v1'] = float(request.form.get('private_value'))
-        dispute['c'] = float(request.form.get('initial_position'))
         dispute['player1_setup'] = True
     else:
         dispute['v2'] = float(request.form.get('private_value'))
-        dispute['s'] = float(request.form.get('initial_position'))
         dispute['player2_setup'] = True
     
     # Check if both players have completed setup
     if dispute['player1_setup'] and dispute['player2_setup']:
-        dispute['min_value'] = dispute['s']
-        dispute['max_value'] = dispute['c']
         dispute['status'] = 'active'
     
     return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username))
@@ -254,4 +254,6 @@ def submit_vote(dispute_id, username):
     return redirect(url_for('dispute_view', dispute_id=dispute_id, username=username))
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+    import os
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)

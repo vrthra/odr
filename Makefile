@@ -1,2 +1,2 @@
 start:
-	python3 app.py
+	env PORT=8080 python3 app.py

@@ -179,8 +179,14 @@
                 <div class="spinner"></div>
                 <p>You have submitted your {{ 'offer' if is_player1 else 'demand' }}. Waiting for the other player to submit theirs.</p>
                 <p style="margin-top: 15px;"><strong>Your {{ 'offer' if is_player1 else 'demand' }}:</strong> ${{ "%.2f"|format(dispute.rounds[-1].b1 if is_player1 else dispute.rounds[-1].b2) }}</p>
-                <button onclick="location.reload()" class="secondary" style="margin-top: 20px;">Refresh Page</button>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Page will refresh automatically...</p>
             </div>
+            <script>
+                // Auto-refresh every 3 seconds
+                setTimeout(function() {
+                    location.reload();
+                }, 3000);
+            </script>
         {% endif %}
         
     {% elif dispute.rounds[-1].status == 'voting' %}
@@ -218,8 +224,14 @@
                 <div class="spinner"></div>
                 <p>You have voted. Waiting for the other player to vote.</p>
                 <p style="margin-top: 15px;"><strong>Your vote:</strong> {{ "ACCEPT ✓" if (current_round.vote1 if is_player1 else current_round.vote2) else "REJECT ✗" }}</p>
-                <button onclick="location.reload()" class="secondary" style="margin-top: 20px;">Refresh Page</button>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Page will refresh automatically...</p>
             </div>
+            <script>
+                // Auto-refresh every 3 seconds
+                setTimeout(function() {
+                    location.reload();
+                }, 3000);
+            </script>
         {% endif %}
         
     {% elif dispute.rounds[-1].status == 'impasse' %}
